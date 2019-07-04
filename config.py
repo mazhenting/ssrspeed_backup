@@ -1,7 +1,7 @@
 #coding:utf-8
 
 config = {
-	"VERSION":"2.4.6",
+	"VERSION":"2.4.10",
 	"WEB_API_VERSION":"0.4.3",
 	"localAddress":"127.0.0.1",
 	"localPort":1087,
@@ -62,58 +62,32 @@ config = {
 		"remark":"Example Remark."
 	},
 	"speedtestsocket":{
-		"maxThread":6,	#Thread count
+		"maxThread":4,	#Thread count
 		"buffer":4096,	#Buffer size,bytes
 		"skipRuleMatch":False,
 		"rules":[
-	#		{
-	#			"mode":"match_isp", #match_isp or match_location
-	#			"ISP":"Microsoft Corporation",
-	#			"tag":"Cachefly"
-	#		},
+			{
+				"mode":"match_isp", #match_isp or match_location
+				"ISP":"Microsoft Corporation",
+				"tag":"Google"
+			},
 			{
 				"mode":"match_isp",
 				"ISP":"Google LLC",
 				"tag":"Default"
 			}
-	#		{
-	#			"mode":"match_location",
-	#			"countries":[	#Country Code,for example: HK, US, JP etc.
-	#			],
-	#			"continent":"EU",
-	#			"tag":"Hetzner_DE"
-	#		},
-	#		{
-	#			"mode":"match_location",
-	#			"countries":[	#Country Code,for example: HK, US, JP etc.
-	#				"HK","SG"
-	#			],
-	#			"continent":"",
-	#			"tag":"Linode_SG"
-	#		}
 		],
 		"downloadLinks":[
 			{
-				"link":"https://download.microsoft.com/download/2/2/A/22AA9422-C45D-46FA-808F-179A1BEBB2A7/office2007sp3-kb2526086-fullfile-en-us.exe",
-				"fileSize":350,	#File size,MBytes
-				"tag":"Not"
-			},
-			{
-				"link":"https://cachefly.cachefly.net/100mb.test",
-				"fileSize":100,	#File size,MBytes
+				"link":"https://download.microsoft.com/download/0/A/F/0AFB5316-3062-494A-AB78-7FB0D4461357/7601.17514.101119-1850_Update_Sp_Wave1-GRMSP1.1_DVD.iso",
+				"fileSize":1900,	#File size,MBytes
 				"tag":"Default"
 			},
 			{
-				"tag":"Hetzner_DE",
-				"link":"https://speed.hetzner.de/1GB.bin",
-				"fileSize":1000	#File size,MBytes
-			},
-			{
-				"tag":"Linode_SG",
-				"link":"http://speedtest.singapore.linode.com/100MB-singapore.bin",
-				"fileSize":100	#File size,MBytes
-			}
-			
+				"link":"https://dl.google.com/dl/android/studio/install/3.4.1.0/android-studio-ide-183.5522156-windows.exe",
+				"fileSize":971,	#File size,MBytes
+				"tag":"Google"
+			}		
 		]
 	}
 }

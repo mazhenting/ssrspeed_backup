@@ -34,17 +34,45 @@ class ParserShadowsocksClash(object):
 			_dict["group"] = cfg.get("group","N/A")
 			_dict["fast_open"] = False
 
-			plugin = cfg.get("plugin","")
-			if (plugin == "obfs"):
-				plugin = "obfs-local"
-			elif (plugin == "v2ray-plugin"):
-				logger.warn("V2Ray plugin not supported.")
-				logger.info("Skip {} - {}".format(_dict["group"],_dict["remarks"]))
-				continue
-			pOpts = cfg.get("plugin-opts",{})
+			pOpts = {}
+			plugin = ""
+			if (cfg.__contains__("plugin")):
+				plugin = cfg.get("plugin", "")
+				if (plugin == "obfs"):
+					plugin = "obfs-local"
+				elif (plugin == "v2ray-plugin"):
+					logger.warn("V2Ray plugin not supported.")
+					logger.info("Skip {} - {}".format(_dict["group"],_dict["remarks"]))
+					continue
+				pOpts = cfg.get("plugin-opts",{})
+			elif (cfg.__contains__("obfs")):
+				rawPlugin = cfg.get("obfs", "")
+				if (rawPlugin):
+					if (rawPlugin == "http"):
+						plugin = "obfs-local"
+						pOpts["mode"] = "http"
+						pOpts["host"] = cfg.get("obfs-host", "")
+					elif (rawPlugin == "tls"):
+						plugin = "obfs-local"
+						pOpts["mode"] = "tls"
+						pOpts["host"] = cfg.get("obfs-host", "")
+					else:
+						logger.warn("Plugin {} not supported.".format(rawPlugin))
+						logger.info("Skip {} - {}".format(_dict["group"],_dict["remarks"]))
+						continue
+			
+			logger.debug("{} - {}".format(_dict["group"],_dict["remarks"]))
+			logger.debug(
+				"Plugin [{}], mode [{}], host [{}]".format(
+					plugin,
+					pOpts.get("mode", ""),
+					pOpts.get("host", "")
+				)
+			)
 			pluginOpts = ""
-			pluginOpts += ("obfs={}".format(pOpts.get("mode","")) if pOpts.get("mode","") else "")
-			pluginOpts += (";obfs-host={}".format(pOpts.get("host","")) if pOpts.get("host","") else "")
+			if (plugin):
+				pluginOpts += ("obfs={}".format(pOpts.get("mode","")) if pOpts.get("mode","") else "")
+				pluginOpts += (";obfs-host={}".format(pOpts.get("host","")) if pOpts.get("host","") else "")
 
 			_dict["plugin"] = plugin
 			_dict["plugin_opts"] = pluginOpts
@@ -80,6 +108,12 @@ class ParserShadowsocksClash(object):
 				f.close()
 				return False
 			f.close()
+
+		self.__parseConfig(clashCfg)
+		logger.debug("Read {} configs.".format(
+			len(self.__configList)
+			)
+		)
 
 		return self.__configList
 

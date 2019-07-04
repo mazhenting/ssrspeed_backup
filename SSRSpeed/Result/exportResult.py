@@ -86,6 +86,14 @@ class ExportResult(object):
 				_result.append(r)
 		return _result
 
+	def __getBasePos(self, width, text):
+		font = self.__font
+		draw = ImageDraw.Draw(Image.new("RGB",(1,1),(255,255,255)))
+		textSize = draw.textsize(text, font=font)[0]
+		basePos = (width - textSize) / 2
+		logger.debug("Base Position {}".format(basePos))
+		return basePos
+
 	def __exportAsPng(self,result):
 		if (self.__colorSpeedList == []):
 			self.setColors()
@@ -106,38 +114,93 @@ class ExportResult(object):
 		remarkRightPosition = groupRightPosition + remarkWidth
 		lossRightPosition = remarkRightPosition + otherWidth
 		tcpPingRightPosition = lossRightPosition + otherWidth
-		dspeedRightPosition = tcpPingRightPosition + otherWidth
+		googlePingRightPosition = tcpPingRightPosition + otherWidth + 25
+		dspeedRightPosition = googlePingRightPosition + otherWidth
 		maxDSpeedRightPosition = dspeedRightPosition + otherWidth
 
 		if (not self.hideMaxSpeed):
 			imageRightPosition = maxDSpeedRightPosition
 		else:
 			imageRightPosition = dspeedRightPosition
+		
 
 		newImageHeight = imageHeight + 30 * 3
-		resultImg = Image.new("RGB",(imageRightPosition,newImageHeight),(255,255,255))
+		resultImg = Image.new("RGB",(imageRightPosition, newImageHeight),(255,255,255))
 		draw = ImageDraw.Draw(resultImg)
 
-		draw.line((0,0,0,newImageHeight - 1),fill=(127,127,127),width=1)
-		draw.line((groupRightPosition,0,groupRightPosition,imageHeight - 1),fill=(127,127,127),width=1)
-		draw.line((remarkRightPosition,0,remarkRightPosition,imageHeight - 1),fill=(127,127,127),width=1)
-		draw.line((lossRightPosition,0,lossRightPosition,imageHeight - 1),fill=(127,127,127),width=1)
-		draw.line((tcpPingRightPosition,0,tcpPingRightPosition,imageHeight - 1),fill=(127,127,127),width=1)
-		draw.line((dspeedRightPosition,0,dspeedRightPosition,imageHeight - 1),fill=(127,127,127),width=1)
-		draw.line((imageRightPosition,0,imageRightPosition,newImageHeight - 1),fill=(127,127,127),width=1)
+		
+	#	draw.line((0,newImageHeight - 30 - 1,imageRightPosition,newImageHeight - 30 - 1),fill=(127,127,127),width=1)
+		text = "SSRSpeed Result Table ( v{} )".format(config["VERSION"])
+		draw.text((self.__getBasePos(imageRightPosition, text), 4),
+			text,
+			font=resultFont,
+			fill=(0,0,0)
+		)
+		draw.line((0, 30, imageRightPosition - 1, 30),fill=(127,127,127),width=1)
+
+		draw.line((1, 0, 1, newImageHeight - 1),fill=(127,127,127),width=1)
+		draw.line((groupRightPosition, 30, groupRightPosition, imageHeight + 30 - 1),fill=(127,127,127),width=1)
+		draw.line((remarkRightPosition, 30, remarkRightPosition, imageHeight + 30 - 1),fill=(127,127,127),width=1)
+		draw.line((lossRightPosition, 30, lossRightPosition, imageHeight + 30 - 1),fill=(127,127,127),width=1)
+		draw.line((tcpPingRightPosition, 30, tcpPingRightPosition, imageHeight + 30 - 1),fill=(127,127,127),width=1)
+		draw.line((googlePingRightPosition, 30, googlePingRightPosition, imageHeight + 30 - 1),fill=(127,127,127),width=1)
+		draw.line((dspeedRightPosition, 30, dspeedRightPosition, imageHeight + 30 - 1),fill=(127,127,127),width=1)
+		draw.line((imageRightPosition, 0, imageRightPosition, newImageHeight - 1),fill=(127,127,127),width=1)
 	
 		draw.line((0,0,imageRightPosition - 1,0),fill=(127,127,127),width=1)
 
-		draw.text((5,4),"Group",font=resultFont,fill=(0,0,0))
-		draw.text((groupRightPosition + 5,4),"Remarks",font=resultFont,fill=(0,0,0))
-		draw.text((remarkRightPosition + 5,4),"Loss",font=resultFont,fill=(0,0,0))
-		draw.text((lossRightPosition + 5,4),"Ping",font=resultFont,fill=(0,0,0))
-		draw.text((tcpPingRightPosition + 5,4),"AvgSpeed",font=resultFont,fill=(0,0,0))
+		draw.text(
+			(
+				self.__getBasePos(groupRightPosition, "Group"), 30 + 4
+			),
+			"Group", font=resultFont, fill=(0,0,0)
+		
+		)
+
+		draw.text(
+			(
+				groupRightPosition + self.__getBasePos(remarkRightPosition - groupRightPosition, "Remarks"), 30 + 4
+			),
+			"Remarks", font=resultFont, fill=(0,0,0)
+		
+		)
+		draw.text(
+			(
+				remarkRightPosition + self.__getBasePos(lossRightPosition - remarkRightPosition, "Loss"), 30 + 4
+			),
+			"Loss", font=resultFont, fill=(0,0,0)
+		)
+
+		draw.text(
+			(
+				lossRightPosition + self.__getBasePos(tcpPingRightPosition - lossRightPosition, "Ping"), 30 + 4
+			),
+			"Ping", font=resultFont, fill=(0,0,0)
+		)
+
+		draw.text(
+			(
+				tcpPingRightPosition + self.__getBasePos(googlePingRightPosition - tcpPingRightPosition, "Google Ping"), 30 + 4
+			),
+			"Google Ping", font=resultFont, fill=(0,0,0)
+		)
+
+		draw.text(
+			(
+				googlePingRightPosition + self.__getBasePos(dspeedRightPosition - googlePingRightPosition, "AvgSpeed"), 30 + 4
+			),
+			"AvgSpeed", font=resultFont, fill=(0,0,0)
+		)
 
 		if (not self.hideMaxSpeed):
-			draw.text((dspeedRightPosition + 5,4),"MaxSpeed",font=resultFont,fill=(0,0,0))
+			draw.text(
+				(
+					dspeedRightPosition + self.__getBasePos(maxDSpeedRightPosition - dspeedRightPosition, "MaxSpeed"), 4
+				),
+				"MaxSpeed", font=resultFont, fill=(0,0,0)
+			)
 	
-		draw.line((0,30,imageRightPosition - 1,30),fill=(127,127,127),width=1)
+		draw.line((0, 60, imageRightPosition - 1, 60),fill=(127,127,127),width=1)
 
 		totalTraffic = 0
 		onlineNode = 0
@@ -145,42 +208,56 @@ class ExportResult(object):
 			totalTraffic += result[i]["trafficUsed"] if (result[i]["trafficUsed"] > 0) else 0
 			if ((result[i]["ping"] > 0 and result[i]["gPing"] > 0) or (result[i]["dspeed"] > 0)):
 				onlineNode += 1
-			draw.line((0,30 * i + 60,imageRightPosition,30 * i + 60),fill=(127,127,127),width=1)
+			
+			j = i + 1
+			draw.line((0,30 * j + 60, imageRightPosition, 30 * j + 60), fill=(127,127,127), width=1)
 			item = result[i]
 
 			group = item["group"]
-			draw.text((5,30 * i + 30 + 4),group,font=resultFont,fill=(0,0,0))
+			draw.text((5,30 * j + 30 + 4),group,font=resultFont,fill=(0,0,0))
 
 			remarks = item["remarks"]
-			draw.text((groupRightPosition + 5,30 * i + 30 + 4),remarks,font=resultFont,fill=(0,0,0,0))
+			draw.text((groupRightPosition + 5,30 * j + 30 + 4),remarks,font=resultFont,fill=(0,0,0,0))
 
 			loss = "%.2f" % (item["loss"] * 100) + "%"
-			draw.text((remarkRightPosition + 5,30 * i + 30 + 4),loss,font=resultFont,fill=(0,0,0))
+			pos = remarkRightPosition + self.__getBasePos(lossRightPosition - remarkRightPosition, loss)
+			draw.text((pos, 30 * j + 30 + 4),loss,font=resultFont,fill=(0,0,0))
 
 			ping = "%.2f" % (item["ping"] * 1000)
-			draw.text((lossRightPosition + 5,30 * i + 30 + 4),ping,font=resultFont,fill=(0,0,0))
+			pos = lossRightPosition + self.__getBasePos(tcpPingRightPosition - lossRightPosition, ping)
+			draw.text((pos, 30 * j + 30 + 4),ping,font=resultFont,fill=(0,0,0))
+
+			gPing = "%.2f" % (item["gPing"] * 1000)
+			pos = tcpPingRightPosition + self.__getBasePos(googlePingRightPosition - tcpPingRightPosition, gPing)
+			draw.text((pos, 30 * j + 30 + 4),gPing,font=resultFont,fill=(0,0,0))
 
 			speed = item["dspeed"]
 			if (speed == -1):
-				draw.text((tcpPingRightPosition + 5,30 * i + 30 + 1),"N/A",font=resultFont,fill=(0,0,0))
+				pos = googlePingRightPosition + self.__getBasePos(dspeedRightPosition - googlePingRightPosition, "N/A")
+				draw.text((pos, 30 * j + 30 + 1),"N/A",font=resultFont,fill=(0,0,0))
 			else:
-				draw.rectangle((tcpPingRightPosition + 1,30 * i + 30 + 1,dspeedRightPosition - 1,30 * i + 60 -1),self.__getColor(speed))
-				draw.text((tcpPingRightPosition + 5,30 * i + 30 + 1),self.__parseSpeed(speed),font=resultFont,fill=(0,0,0))
+				draw.rectangle((googlePingRightPosition + 1,30 * j + 30 + 1,dspeedRightPosition - 1,30 * j + 60 -1),self.__getColor(speed))
+				speed = self.__parseSpeed(speed)
+				pos = googlePingRightPosition + self.__getBasePos(dspeedRightPosition - googlePingRightPosition, speed)
+				draw.text((pos, 30 * j + 30 + 1), speed,font=resultFont,fill=(0,0,0))
 
 			if (not self.hideMaxSpeed):
 				maxSpeed = item["maxDSpeed"]
 				if (maxSpeed == -1):
-					draw.text((dspeedRightPosition + 5,30 * i + 30 + 1),"N/A",font=resultFont,fill=(0,0,0))
+					pos = dspeedRightPosition + self.__getBasePos(maxDSpeedRightPosition - dspeedRightPosition, "N/A")
+					draw.text((pos, 30 * j + 30 + 1),"N/A",font=resultFont,fill=(0,0,0))
 				else:
-					draw.rectangle((dspeedRightPosition + 1,30 * i + 30 + 1,maxDSpeedRightPosition - 1,30 * i + 60 -1),self.__getColor(maxSpeed))
-					draw.text((dspeedRightPosition + 5,30 * i + 30 + 1),self.__parseSpeed(maxSpeed),font=resultFont,fill=(0,0,0))
+					draw.rectangle((dspeedRightPosition + 1,30 * j + 30 + 1,maxDSpeedRightPosition - 1,30 * j + 60 -1),self.__getColor(maxSpeed))
+					maxSpeed = self.__parseSpeed(maxSpeed)
+					pos = dspeedRightPosition + self.__getBasePos(maxDSpeedRightPosition - dspeedRightPosition, maxSpeed)
+					draw.text((pos, 30 * j + 30 + 1), maxSpeed,font=resultFont,fill=(0,0,0))
 		files = []
 		if (totalTraffic < 0):
 			trafficUsed = "N/A"
 		else:
 			trafficUsed = self.__parseTraffic(totalTraffic)
 
-		draw.text((5,imageHeight + 4),
+		draw.text((5, imageHeight + 30 + 4),
 			"Traffic used : {}. Online Node(s) : [{}/{}]".format(
 				trafficUsed,
 				onlineNode,
@@ -189,14 +266,16 @@ class ExportResult(object):
 			font=resultFont,
 			fill=(0,0,0)
 		)
-		draw.line((0,newImageHeight - 30 * 2 - 1,imageRightPosition,newImageHeight - 30 * 2 - 1),fill=(127,127,127),width=1)
-		draw.text((5,imageHeight + 30 + 4),
+	#	draw.line((0,newImageHeight - 30 * 3 - 1,imageRightPosition,newImageHeight - 30 * 3 - 1),fill=(127,127,127),width=1)
+		draw.text((5,imageHeight + 30 * 2 + 4),
 			"Generated at {}".format(
 				time.strftime("%Y-%m-%d %H:%M:%S", generatedTime)
 			),
 			font=resultFont,
 			fill=(0,0,0)
 		)
+		draw.line((0,newImageHeight - 30 - 1,imageRightPosition,newImageHeight - 30 - 1),fill=(127,127,127),width=1)
+		'''
 		draw.line((0,newImageHeight - 30 - 1,imageRightPosition,newImageHeight - 30 - 1),fill=(127,127,127),width=1)
 		draw.text((5,imageHeight + 30 * 2 + 4),
 			"By SSRSpeed {}.".format(
@@ -205,6 +284,7 @@ class ExportResult(object):
 			font=resultFont,
 			fill=(0,0,0)
 		)
+		'''
 		
 		draw.line((0,newImageHeight - 1,imageRightPosition,newImageHeight - 1),fill=(127,127,127),width=1)
 		filename = "./results/" + time.strftime("%Y-%m-%d-%H-%M-%S", generatedTime) + ".png"

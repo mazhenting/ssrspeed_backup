@@ -3,6 +3,7 @@
 
 
 
+  
 <h1 align="center">
     <br>SSRSpeed
 </h1>
@@ -25,6 +26,7 @@
  - SpeedTestNet和Fast方式已停止支持
  - MacOS 下暂未找到合适的方式检测libsodium，所以请务必保证在测试使用chacha20等加密方式的节点前保证libsodium已安装
  - Shadowsocks-libev 和 Simple-Obfs 推荐使用编译安装的方式进行安装，已知在Debian仓库中的Shadowsocks-libev版本过低导致无法使用一些新加密方式
+ - 如果您的主机名中带有非ASCII字符，Web-UI将无法使用
 
 
 ## 特点
@@ -93,9 +95,9 @@ pip(pip3) install -r requirements.txt
 
 
 使用示例:
-- python main.py -c gui-config.json --include 韩国 --include-remark Azure --include-group MoCloudPlus
-- python main.py -u https://mocloudplus.com/link/ABCDEFG123456?mu=0 --include 香港 Azure --include-group MoCloudPlus --exclude HKT HKBN
-- python main.py -u https://mocloudplus.com/link/ABCDEFG123456?mu=0 -t ss
+- python main.py -c gui-config.json --include 韩国 --include-remark Azure --include-group YoYu
+- python main.py -u https://my.yoyutrans.com/subscriptionlink --include 香港 Azure --include-group YoYu --exclude Azure
+- python main.py -u https://my.yoyutrans.com/subscriptionlink -t ss
 
 
 关键字优先级如下
@@ -110,6 +112,10 @@ pip(pip3) install -r requirements.txt
 
     python web.py
     此时访问 http://127.0.0.1:10870/ 可以进入Web UI
+
+## 修改Socket模式的测速源
+ - 仅需修改Tag为 "Default" 和Tag为 "Google" 的对象中的 **link**, **size**属性，其中 "link" 为下载源，"size" 为该下载源对应的文件大小(MBytes)
+ - 更加高级的用法请参考下面的 [高级用法]
 
 ## 高级用法
  - **规则**
@@ -204,15 +210,15 @@ Response (No Configs) => "no configs"
 
  - Proxy Types
 
-|Proxy|Client|Config Parser|
-|:-:|:-:|:-:|
-|SSR|ShadowsocksR-libev (Windows)<br>ShadowsocksR-Python (Linux and MacOS)|ShadowsocksR|
-|SSR-C#|ShadowsocksR-C# (Windows)<br>ShadowsocksR-Python (Linux and MacOS)|ShadowsocksR|
-|SS|Shadowsocks-libev (All Platform)|Shadowsocks \| ShadowsocksD \| Clash|
+ |Proxy|Client|Config Parser|
+ |:-:|:-:|:-:|
+ |SSR|ShadowsocksR-libev (Windows)<br>ShadowsocksR-Python (Linux and MacOS)|ShadowsocksR|
+ |SSR-C#|ShadowsocksR-C# (Windows)<br>ShadowsocksR-Python (Linux and MacOS)|ShadowsocksR|
+ |SS|Shadowsocks-libev (All Platform)|Shadowsocks \| ShadowsocksD \| Clash|
  |V2RAY|V2Ray-Core (All Platform)|V2RayN \| Quantumult \| Clash
 
 ## 开发者
-- [@ranwen](https://github.com/ranwen)
+- <del>应该开发者本人要求已移除</del>
 
 ## 感谢
 - 新配色方案

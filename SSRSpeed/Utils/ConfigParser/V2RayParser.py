@@ -109,7 +109,8 @@ class V2RayParser(BaseParser):
 		except ValueError:
 			logger.info("Try V2Ray Clash Parser.")
 			pv2rc = ParserV2RayClash()
-			self._configList = pv2rc.parseSubsConfig(rep)
+			for cfg in pv2rc.parseSubsConfig(rep):
+				self._configList.append(self.__generateConfig(cfg))
 		logger.info("Read %d node(s)" % len(self._configList))
 	
 	def readGuiConfig(self,filename):

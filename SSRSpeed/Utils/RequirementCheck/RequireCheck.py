@@ -83,6 +83,7 @@ class RequirementCheck(object):
 				out, errs = process.communicate()
 				logger.exception(out.decode("utf-8") + errs.decode("utf-8"))
 				return False
+			logger.debug("ldconfig : {}".format(out))
 			if ("libsodium" not in out.decode("utf-8")):
 				return False
 			return True
@@ -108,9 +109,9 @@ class RequirementCheck(object):
 			if (simpleobfs and sslibev):
 				break
 		if (not simpleobfs):
-			logger.critical("Simple Obfs not found.")
+			logger.warn("Simple Obfs not found !!!")
 		if (not sslibev):
-			logger.critical("Shadowsocks-libev not found.")
+			logger.warn("Shadowsocks-libev not found !!!")
 		return True if (simpleobfs and sslibev) else False
 
 

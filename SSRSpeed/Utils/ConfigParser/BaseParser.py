@@ -133,7 +133,7 @@ class BaseParser(object):
 		}
 		rep = requests.get(url,headers = header,timeout=15)
 		rep.encoding = "utf-8"
-		rep = rep.content.decode("utf-8")
+		rep = rep.content.decode("utf-8").strip()
 		linksArr = (b64plus.decode(rep).decode("utf-8")).split("\n")
 		for link in linksArr:
 			link = link.strip()

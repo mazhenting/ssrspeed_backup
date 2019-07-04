@@ -3,6 +3,7 @@
 
 
 
+  
 <h1 align="center">
     <br>SSRSpeed
 </h1>
@@ -18,7 +19,7 @@ Batch speed measuring tool based on Shadowsocks(R)
 <p></p>
 
 ## Links
- - [中文文档](https://github.com/mazhenting/ssrspeed_backup/blob/master/README_ZH_CN.md)
+ - [中文文档](https://github.com/NyanChanMeow/SSRSpeed/blob/master/README_ZH_CN.md)
 
 ## Important Hint
 
@@ -27,6 +28,7 @@ Batch speed measuring tool based on Shadowsocks(R)
  - SpeedTestNet and Fast.com is no longer supported.
  - MacOS has not found a suitable way to detect libsodium, so be sure to ensure that libsodium is installed before testing nodes that use encryption methods such as chacha20.
  - Shadowsocks-libev and Simple-Obfs are recommended to be installed using a compiled installation. It is known that the Shadowsocks-libev version in the Debian repository is too low to use some new encryption methods.
+ - If your hostname has non-ASCII characters, Web-UI will not work.
 
 ## Features
 
@@ -98,9 +100,9 @@ pip(pip3) install -r requirements.txt
 
 
 Example usage :
-- python main.py -c gui-config.json --include 韩国 --include-remark Azure --include-group MoCloudPlus
-- python main.py -u https://mocloudplus.com/link/ABCDEFG123456?mu=0 --include 香港 Azure --include-group MoCloudPlus --exclude HKT HKBN
-- python main.py -u https://mocloudplus.com/link/ABCDEFG123456?mu=0 -t ss
+- python main.py -c gui-config.json --include 韩国 --include-remark Azure --include-group YoYu
+- python main.py -u https://my.yoyutrans.com/subscriptionlink --include 香港 Azure --include-group YoYu --exclude Azure
+- python main.py -u https://my.yoyutrans.com/subscriptionlink -t ss
 
 The parameter priority is as follows:
 
@@ -115,6 +117,10 @@ The parameter priority is as follows:
 
     python web.py
     You can now access the WebUI through http://127.0.0.1:10870 
+
+## Modify the speed source of Socket mode
+  -  Just modify the **link**, **size** attribute in the object with the tag "Default" and the tag "Google", where "link" is the download source and "size" is the file corresponding to the download source. Size (MBytes)
+  - For more advanced usage, please refer to the following [Advanced Usage]
 
 ## Advanced Usage
 
@@ -210,15 +216,15 @@ Response (No Configs) => "no configs"
 
  - Proxy Types
 
-|Proxy|Client|Config Parser|
-|:-:|:-:|:-:|
-|SSR|ShadowsocksR-libev (Windows)<br>ShadowsocksR-Python (Linux and MacOS)|ShadowsocksR|
-|SSR-C#|ShadowsocksR-C# (Windows)<br>ShadowsocksR-Python (Linux and MacOS)|ShadowsocksR|
-|SS|Shadowsocks-libev (All Platform)|Shadowsocks \| ShadowsocksD \| Clash|
+ |Proxy|Client|Config Parser|
+ |:-:|:-:|:-:|
+ |SSR|ShadowsocksR-libev (Windows)<br>ShadowsocksR-Python (Linux and MacOS)|ShadowsocksR|
+ |SSR-C#|ShadowsocksR-C# (Windows)<br>ShadowsocksR-Python (Linux and MacOS)|ShadowsocksR|
+ |SS|Shadowsocks-libev (All Platform)|Shadowsocks \| ShadowsocksD \| Clash|
  |V2RAY|V2Ray-Core (All Platform)|V2RayN \| Quantumult \| Clash
 
 ## Developers
-- [@ranwen](https://github.com/ranwen)
+- <del>Removed as requested by the developer</del>
 
 ## Acknowledgement
  - New color scheme

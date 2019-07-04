@@ -23,6 +23,8 @@ def parseLocation():
 		tmp = rep.json()
 		logger.info("Server Country Code : %s,Continent Code : %s,ISP : %s" % (tmp["country_code"],tmp["continent_code"],tmp["organization"]))
 		return (True,tmp["country_code"],tmp["continent_code"],tmp["organization"])
+	except requests.exceptions.ReadTimeout:
+		logger.error("Parse location timeout.")
 	except:
 		logger.exception("Parse location failed.")
 		try:
@@ -66,6 +68,9 @@ def IPLoc(ip = ""):
 		},timeout=5)
 		tmp = rep.json()
 		return tmp
+	except requests.exceptions.ReadTimeout:
+		logger.error("Geo IP Timeout.")
+		return {}
 	except:
 		logger.exception("Geo IP Failed.")
 		try:
