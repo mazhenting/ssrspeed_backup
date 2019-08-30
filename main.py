@@ -5,24 +5,11 @@ import sys
 import os
 import logging
 
-from SSRSpeed.Shadowsocks.Shadowsocks import Shadowsocks as SSClient
-from SSRSpeed.Shadowsocks.ShadowsocksR import ShadowsocksR as SSRClient
-from SSRSpeed.Shadowsocks.V2Ray import V2Ray as V2RayClient
-
-import SSRSpeed.Core.Shell.Console as ShellConsole
-
-from SSRSpeed.SpeedTest.SpeedTestCore import SpeedTestCore
-
-from SSRSpeed.Result.exportResult import ExportResult
-import SSRSpeed.Result.importResult as importResult
-
-from SSRSpeed.Utils.checkPlatform import checkPlatform
-from SSRSpeed.Utils.ConfigParser.ShadowsocksParser import ShadowsocksParser as SSParser
-from SSRSpeed.Utils.ConfigParser.ShadowsocksRParser import ShadowsocksRParser as SSRParser
-from SSRSpeed.Utils.ConfigParser.V2RayParser import V2RayParser
-from SSRSpeed.Utils.RequirementCheck.RequireCheck import RequirementCheck
-
 from config import config
+
+from ssrspeed.shell import cli as cli_cfg
+from ssrspeed.utils import check_platform, RequirementsCheck
+from ssrspeed.core import SSRSpeedCore
 
 if (not os.path.exists("./logs/")):
 	os.mkdir("./logs/")
@@ -44,7 +31,7 @@ consoleHandler.setFormatter(formatter)
 VERSION = config["VERSION"]
 
 if (__name__ == "__main__"):
-	pfInfo = checkPlatform()
+	pfInfo = check_platform()
 	if (pfInfo == "Unknown"):
 		logger.critical("Your system does not supported.Please contact developer.")
 		sys.exit(1)
@@ -62,13 +49,13 @@ if (__name__ == "__main__"):
 	EXCLUDE_REMARK_KEWORD = []
 	TEST_METHOD = ""
 	TEST_MODE = ""
-	PROXY_TYPE = "SSR"
-	SPLIT_CNT = 0
+	#PROXY_TYPE = "SSR"
+	#SPLIT_CNT = 0
 	SORT_METHOD = ""
 	SKIP_COMFIRMATION = False
 	RESULT_IMAGE_COLOR = "origin"
 	
-	options,args = ShellConsole.init(VERSION)
+	options,args = cli_cfg.init(VERSION)
 
 	if (options.paolu):
 		for root, dirs, files in os.walk(".", topdown=False):
@@ -102,12 +89,18 @@ if (__name__ == "__main__"):
 			item.addHandler(fileHandler)
 			item.addHandler(consoleHandler)
 
+	logger.info("SSRSpeed {}, Web Api Version {}".format(config["VERSION"], config["WEB_API_VERSION"]))
+
 	if (logger.level == logging.DEBUG):
 		logger.debug("Program running in debug mode")
 
-	rc = RequirementCheck()
-	rc.check()
+	if not options.skip_requirements_check:
+		rc = RequirementsCheck()
+		rc.check()
+	else:
+		logger.warn("Requirements check skipped.")
 
+	'''
 	if (options.proxy_type):
 		if (options.proxy_type.lower() == "ss"):
 			PROXY_TYPE = "SS"
@@ -119,19 +112,26 @@ if (__name__ == "__main__"):
 			PROXY_TYPE = "V2RAY"
 		else:
 			logger.warn("Unknown proxy type {} ,using default ssr.".format(options.proxy_type))
+	'''
 
 	#print(options.test_method)
-	if (options.test_method == "speedtestnet"):
+	if options.test_method == "speedtestnet":
 		TEST_METHOD = "SPEED_TEST_NET"
-	elif(options.test_method == "fast"):
+	elif options.test_method == "fast":
 		TEST_METHOD = "FAST"
-	else:
+	elif options.test_method == "stasync":
+		TEST_METHOD = "ST_ASYNC"
+	elif options.test_method == "socket":
 		TEST_METHOD = "SOCKET"
+	else:
+		TEST_METHOD = "ST_ASYNC"
 
 	if (options.test_mode == "pingonly"):
 		TEST_MODE = "TCP_PING"
 	elif(options.test_mode == "all"):
 		TEST_MODE = "ALL"
+	elif (options.test_mode == "wps"):
+		TEST_MODE = "WEB_PAGE_SIMULATION"
 	else:
 		logger.critical("Invalid test mode : %s" % options.test_mode)
 		sys.exit(1)
@@ -177,8 +177,10 @@ if (__name__ == "__main__"):
 		)
 	)
 
+	'''
 	if (int(options.split_count) > 0):
 		SPLIT_CNT = int(options.split_count)
+	'''
 	
 	if (options.sort_method):
 		sm = options.sort_method
@@ -194,41 +196,45 @@ if (__name__ == "__main__"):
 		else:
 			logger.error("Sort method %s not support." % sm)
 
+	sc = SSRSpeedCore()
+
 	if (options.import_file and CONFIG_LOAD_MODE == 0):
 		IMPORT_FILENAME = options.import_file
-		er = ExportResult()
-		er.setColors(RESULT_IMAGE_COLOR)
-		er.export(importResult.importResult(IMPORT_FILENAME),SPLIT_CNT,1,SORT_METHOD)
+		sc.import_and_export(IMPORT_FILENAME)
 		sys.exit(0)
 
-	if (PROXY_TYPE == "SSR"):
-		client = SSRClient()
-		uConfigParser = SSRParser()
-	elif (PROXY_TYPE == "SSR-C#"):
-		client = SSRClient()
-		client.useSsrCSharp = True
-		uConfigParser = SSRParser()
-	elif(PROXY_TYPE == "SS"):
-		client = SSClient()
-		uConfigParser = SSParser()
-	elif(PROXY_TYPE == "V2RAY"):
-		client = V2RayClient()
-		uConfigParser = V2RayParser()
-
+	configs = []
 	if (CONFIG_LOAD_MODE == 1):
-		uConfigParser.readGuiConfig(CONFIG_FILENAME)
+		sc.console_setup(
+			TEST_MODE,
+			TEST_METHOD,
+			RESULT_IMAGE_COLOR,
+			SORT_METHOD,
+			cfg_filename = CONFIG_FILENAME
+		)
+	#	sc.consoleReadFileConfigs(CONFIG_FILENAME)
 	else:
-		uConfigParser.readSubscriptionConfig(CONFIG_URL)
-	uConfigParser.excludeNode([],[],config["excludeRemarks"])
-	uConfigParser.filterNode(FILTER_KEYWORD,FILTER_GROUP_KRYWORD,FILTER_REMARK_KEYWORD)
-	uConfigParser.excludeNode(EXCLUDE_KEYWORD,EXCLUDE_GROUP_KEYWORD,EXCLUDE_REMARK_KEWORD)
-	uConfigParser.printNode()
-	logger.info("{} node(s) will be test.".format(len(uConfigParser.getAllConfig())))
+		sc.console_setup(
+			TEST_MODE,
+			TEST_METHOD,
+			RESULT_IMAGE_COLOR,
+			SORT_METHOD,
+			url = CONFIG_URL
+		)
+	#	sc.consoleReadSubscription(CONFIG_URL)
 
-	if (TEST_MODE == "TCP_PING"):
-		logger.info("Test mode : tcp ping only.")
-	else:
-		logger.info("Test mode : speed and tcp ping.\nTest method : %s." % TEST_METHOD)
+	if options.group_override:
+		sc.set_group(options.group_override)
+
+	sc.filter_nodes(
+		FILTER_KEYWORD,
+		FILTER_GROUP_KRYWORD,
+		FILTER_REMARK_KEYWORD,
+		EXCLUDE_KEYWORD,
+		EXCLUDE_GROUP_KEYWORD,
+		EXCLUDE_REMARK_KEWORD
+	)
+	sc.clean_result()
 
 	if (not SKIP_COMFIRMATION):
 		ans = input("Before the test please confirm the nodes,Ctrl-C to exit. (Y/N)")
@@ -236,28 +242,8 @@ if (__name__ == "__main__"):
 			pass
 		else:
 			sys.exit(0)
+	
+	sc.start_test(options.use_ssr_cs)
 
-	'''
-		{
-			"group":"",
-			"remarks":"",
-			"loss":0,
-			"ping":0.01,
-			"gping":0.01,
-			"dspeed":10214441 #Bytes
-		}
-	'''
-	Result = []
-	stc = SpeedTestCore(uConfigParser,client,TEST_METHOD)
-	if (TEST_MODE == "ALL"):
-		stc.fullTest()
-		Result = stc.getResult()
-	elif (TEST_MODE == "TCP_PING"):
-		stc.tcpingOnly()
-		Result = stc.getResult()
-
-	er = ExportResult()
-	er.setColors(RESULT_IMAGE_COLOR)
-	er.export(Result,SPLIT_CNT,0,SORT_METHOD)
 
 
