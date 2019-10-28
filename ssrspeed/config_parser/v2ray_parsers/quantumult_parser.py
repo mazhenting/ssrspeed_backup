@@ -16,6 +16,22 @@ class ParserV2RayQuantumult(object):
 		linkDecoded = b64plus.decode(link).decode("utf-8")
 		try:
 			linkSplited = linkDecoded.split(",")
+			
+			new_list = []
+			while True:
+				try:
+					item = linkSplited.pop(0)
+				except IndexError:
+					break
+				text = item
+				while text.count("\"") % 2 != 0:
+					try:
+						text += ", {}".format(linkSplited.pop(0))
+					except IndexError:
+						raise ValueError("Invalid Quantumult URL.")
+				new_list.append(text)
+			linkSplited = new_list
+
 			remarks = linkSplited[0].split(" = ")[0]
 			server = linkSplited[1]
 			remarks = remarks if remarks else server
@@ -39,17 +55,17 @@ class ParserV2RayQuantumult(object):
 			i = 7
 			if (tls):
 				i = 8
-			if (len(linkSplited) == 12):
+			if len(linkSplited) == 11 or len(linkSplited) == 12:
 				net = linkSplited[i+1].split("=")[1]
 				path = linkSplited[i+2].split("=")[1].replace("\"","")
 				header = linkSplited[i+3].split("=")[1].replace("\"","").split("[Rr][Nn]")
 				if (len(header) > 0):
-					host = header[0].split(": ")[1]
+					host = header[0].split(":")[1].strip()
 					for h in range(1,len(header)):
 						headers.append(
 							{
-								"header":header[h].split(": ")[0],
-								"value":header[h].split(": ")[1]
+								"header":header[h].split(":")[0].strip(),
+								"value":header[h].split(":")[1].strip()
 							}
 						)
 

@@ -209,7 +209,7 @@ class ExportResult(object):
 		if (not self.hideMaxSpeed):
 			draw.text(
 				(
-					dspeedRightPosition + self.__getBasePos(maxDSpeedRightPosition - dspeedRightPosition, "MaxSpeed"), 4
+					dspeedRightPosition + self.__getBasePos(maxDSpeedRightPosition - dspeedRightPosition, "MaxSpeed"), 30 + 4
 				),
 				"MaxSpeed", font=resultFont, fill=(0,0,0)
 			)

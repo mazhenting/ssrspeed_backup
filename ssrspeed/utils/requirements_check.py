@@ -21,7 +21,8 @@ class RequirementsCheck(object):
 			"ShadowsocksR-libev":[
 				"./clients/shadowsocksr-libev/libssp-0.dll",
 				"./clients/shadowsocksr-libev/libwinpthread-1.dll",
-				"./clients/shadowsocksr-libev/pcre3.dll",
+				"./clients/shadowsocksr-libev/libpcre-1.dll",
+				"./clients/shadowsocksr-libev/libcrypto-1_1.dll",
 				"./clients/shadowsocksr-libev/ssr-local.exe"
 			],
 			"ShadowsocksR-C#":[

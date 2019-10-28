@@ -31,6 +31,12 @@ class BaseClient(object):
 	def startClient(self,config={}):
 		pass
 
+	def check_alive(self):
+		return self._process.poll() is None
+
+	def test_process_terminate(self):
+		self._process.terminate()
+
 	def stopClient(self):
 		self._beforeStopClient()
 		if(self._process != None):

@@ -200,6 +200,8 @@ if (__name__ == "__main__"):
 
 	if (options.import_file and CONFIG_LOAD_MODE == 0):
 		IMPORT_FILENAME = options.import_file
+		sc.colors = RESULT_IMAGE_COLOR
+		sc.sortMethod = SORT_METHOD if SORT_METHOD else ""
 		sc.import_and_export(IMPORT_FILENAME)
 		sys.exit(0)
 

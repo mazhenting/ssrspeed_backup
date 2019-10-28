@@ -4,7 +4,7 @@ import os
 import shutil
 import json
 
-__version__ = "2.6.1"
+__version__ = "2.6.3"
 __web_api_version__ = "0.5.2"
 
 config = {
@@ -26,7 +26,7 @@ if not LOADED:
 			raise FileNotFoundError("Default configuraton file not found, please download from the official repo and try again.")
 		shutil.copy("ssrspeed_config.example.json", "ssrspeed_config.json")
 
-	with open("ssrspeed_config.json", "r") as f:
+	with open("ssrspeed_config.json", "r", encoding = "utf-8") as f:
 		try:
 			file_config = json.load(f)
 			config.update(file_config)

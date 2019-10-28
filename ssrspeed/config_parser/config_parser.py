@@ -16,6 +16,7 @@ from .clash_parser import ParserClash
 from .node_filters import NodeFilter
 
 from config import config
+PROXY_SETTINGS = config["proxy"]
 LOCAL_ADDRESS = config["localAddress"]
 LOCAL_PORT = config["localPort"]
 TIMEOUT = 10
@@ -156,40 +157,72 @@ class UniversalParser:
 			)
 		#logger.info(f"{len(self.__nodes)} node(s) in list.")
 
-	def read_subscription(self, url: str):
-		header = {
-			"User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"
-		}
-		rep = requests.get(url,headers = header, timeout=15)
-		rep.encoding = "utf-8"
-	#	rep = rep.content.decode("utf-8")
-		rep = rep.text
+	def read_subscription(self, urls: list):
+		for url in urls:
+			if not url:
+				continue
 
-		parsed = False
-		#Try ShadowsocksD Parser
-		if rep[:6] == "ssd://":
-			parsed = True
-			logger.info("Try ShadowsocksD Parser.")
-			pssd = ParserShadowsocksD(shadowsocks_get_config(LOCAL_ADDRESS, LOCAL_PORT, TIMEOUT))
-			cfgs = pssd.parseSubsConfig(b64plus.decode(rep[6:]).decode("utf-8"))
-			for cfg in cfgs:
-				self.__nodes.append(NodeShadowsocks(cfg))
-		if parsed: return
+			if (
+				url.startswith("ss://") or
+				url.startswith("ssr://") or
+				url.startswith("vmess://")
+			):
+				self.__nodes.extend(self.parse_links([url]))
+				continue
 
-		#Try base64 decode
-		try:
-			rep = rep.strip()
-			links = (b64plus.decode(rep).decode("utf-8")).split("\n")
-			logger.debug("Base64 decode success.")
-			self.__nodes = self.parse_links(links)
-			parsed = True
-		except binascii.Error:
-			logger.info("Base64 decode failed.")
-		if parsed: return
+			header = {
+				"User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"
+			}
+			logger.info("Reading {}".format(url))
+			if PROXY_SETTINGS["enabled"]:
+				auth = ""
+				if PROXY_SETTINGS["username"]:
+					auth = "{}:{}@".format(
+						PROXY_SETTINGS["username"],
+						PROXY_SETTINGS["password"]
+					)
+				proxy = "socks5://{}{}:{}".format(
+					auth,
+					PROXY_SETTINGS["address"],
+					PROXY_SETTINGS["port"]
+				)
+				proxies = {
+					"http": proxy,
+					"https": proxy
+				}
+				logger.info("Reading subscription via {}".format(proxy))
+				rep = requests.get(url,headers = header, timeout=15, proxies=proxies)
+			else:
+				rep = requests.get(url,headers = header, timeout=15)
+			rep.encoding = "utf-8"
+		#	rep = rep.content.decode("utf-8")
+			rep = rep.text
 
-		#Try Clash Parser
-		self.__nodes = self.__parse_clash(rep)
-		
+			parsed = False
+			#Try ShadowsocksD Parser
+			if rep[:6] == "ssd://":
+				parsed = True
+				logger.info("Try ShadowsocksD Parser.")
+				pssd = ParserShadowsocksD(shadowsocks_get_config(LOCAL_ADDRESS, LOCAL_PORT, TIMEOUT))
+				cfgs = pssd.parseSubsConfig(b64plus.decode(rep[6:]).decode("utf-8"))
+				for cfg in cfgs:
+					self.__nodes.append(NodeShadowsocks(cfg))
+			if parsed: continue
+
+			#Try base64 decode
+			try:
+				rep = rep.strip()
+				links = (b64plus.decode(rep).decode("utf-8")).split("\n")
+				logger.debug("Base64 decode success.")
+				self.__nodes.extend(self.parse_links(links))
+				parsed = True
+			except ValueError:
+				logger.info("Base64 decode failed.")
+			if parsed: continue
+
+			#Try Clash Parser
+			self.__nodes.extend(self.__parse_clash(rep))
+
 	def read_gui_config(self, filename: str):
 		raw_data = ""
 		with open(filename, "r", encoding="utf-8") as f:
@@ -205,7 +238,7 @@ class UniversalParser:
 				or
 				(
 					"subscriptions" not in data
-					and "serverSubscribe" not in data
+					and "serverSubscribes" not in data
 					and "vmess" not in data
 				)
 			):
@@ -213,7 +246,7 @@ class UniversalParser:
 				for cfg in pssb.parse_gui_data(data):
 					self.__nodes.append(NodeShadowsocks(cfg))
 			#ShadowsocksR
-			elif "serverSubscribe" in data:
+			elif "serverSubscribes" in data:
 				pssr = ParserShadowsocksR(self.__get_ss_base_config())
 				for cfg in pssr.parse_gui_data(data):
 					self.__nodes.append(NodeShadowsocksR(cfg))

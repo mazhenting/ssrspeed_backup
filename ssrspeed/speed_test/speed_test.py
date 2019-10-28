@@ -2,13 +2,22 @@
 
 import logging
 import copy
+import socket
 import time
+
 
 logger = logging.getLogger("Sub")
 
 from .test_methods import SpeedTestMethods
 from ..client_launcher import ShadowsocksClient, ShadowsocksRClient, V2RayClient
 from ..utils.geo_ip import domain2ip, parseLocation, IPLoc
+from ..utils.port_checker import check_port
+
+from config import config
+
+LOCAL_ADDRESS = config["localAddress"]
+LOCAL_PORT = config["localPort"]
+
 
 class SpeedTest(object):
 	def __init__(self, parser, method = "SOCKET", use_ssr_cs = False):
@@ -164,6 +173,47 @@ class SpeedTest(object):
 				self.__current = _item
 				config["server_port"] = int(config["server_port"])
 				client.startClient(config)
+
+				# Check client started
+				time.sleep(1)
+				ct = 0
+				client_started = True
+				while not client.check_alive():
+					ct += 1
+					if ct > 3:
+						client_started = False
+						break
+					client.startClient(config)
+					time.sleep(1)
+				if not client_started:
+					logger.error("Failed to start client.")
+					continue
+				logger.info("Client started.")
+
+				# Check port
+				ct = 0
+				port_opened = True
+				while True:
+					if ct >= 3:
+						port_opened = False
+						break
+					time.sleep(1)
+					try:
+						check_port(LOCAL_PORT)
+						break
+					except socket.timeout:
+						ct += 1
+						logger.error("Port {} timeout.".format(LOCAL_PORT))
+					except ConnectionRefusedError:
+						ct += 1
+						logger.error("Connection refused on port {}.".format(LOCAL_PORT))
+					except:
+						ct += 1
+						logger.exception("An error occurred:\n")
+				if not port_opened:
+					logger.error("Port {} closed.".format(LOCAL_PORT))
+					continue
+
 				inboundInfo = self.__geoIPInbound(config)
 				_item["geoIP"]["inbound"]["address"] = "{}:{}".format(inboundInfo[0],config["server_port"])
 				_item["geoIP"]["inbound"]["info"] = inboundInfo[1]
@@ -228,11 +278,10 @@ class SpeedTest(object):
 						)
 					else:
 						logger.error(f"Unknown Test Mode {test_mode}")
-
-				self.__results.append(_item)
 			except Exception:
 				logger.exception("\n")
 			finally:
+				self.__results.append(_item)
 				if client:
 					client.stopClient()
 				node = self.__get_next_config()

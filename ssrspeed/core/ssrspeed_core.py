@@ -4,6 +4,7 @@ import time
 import logging
 import json
 import threading
+import socket
 import sys
 import os
 
@@ -21,8 +22,17 @@ from ..result import Sorter
 
 from ..speed_test import SpeedTest
 from ..utils import check_platform
+from ..utils.port_checker import check_port
 
 from config import config
+
+try:
+	check_port(config["localPort"])
+	print("Port {} already in use,".format(config["localPort"]) + " please change the local port in ssrspeed_config.json or terminate the application.")
+	sys.exit(0)
+except (ConnectionRefusedError, socket.timeout):
+	pass
+
 
 class SSRSpeedCore(object):
 	def __init__(self):
@@ -62,10 +72,11 @@ class SSRSpeedCore(object):
 			)
 		return result
 	
-	def web_read_subscription(self, url:str) -> list:
+	def web_read_subscription(self, url: str) -> list:
 		parser = UniversalParser()
-		if (parser):
-			parser.read_subscription(url)
+		urls = url.split(" ")
+		if parser:
+			parser.read_subscription(urls)
 			return self.__generate_web_configs(parser.nodes)
 		return []
 
@@ -105,7 +116,7 @@ class SSRSpeedCore(object):
 			if cfg_filename:
 				self.__parser.read_gui_config(cfg_filename)
 			elif url:
-				self.__parser.read_subscription(url)
+				self.__parser.read_subscription(url.split(" "))
 			else:
 				raise ValueError("Subscription URL or configuration file must be set !")
 

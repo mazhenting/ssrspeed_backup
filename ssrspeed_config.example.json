@@ -6,6 +6,13 @@
 		"到期时间",
 		"过期时间"
 	],
+	"proxy": {
+		"enabled": false,
+		"address": "127.0.0.1",
+		"port": 1080,
+		"username": null,
+		"password": null
+	},
 	"web": {
 		"listen": "127.0.0.1",
 		"port": 10870,
