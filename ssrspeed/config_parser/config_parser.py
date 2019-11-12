@@ -238,7 +238,7 @@ class UniversalParser:
 				or
 				(
 					"subscriptions" not in data
-					and "serverSubscribes" not in data
+					and "serverSubscribe" not in data
 					and "vmess" not in data
 				)
 			):
@@ -246,7 +246,7 @@ class UniversalParser:
 				for cfg in pssb.parse_gui_data(data):
 					self.__nodes.append(NodeShadowsocks(cfg))
 			#ShadowsocksR
-			elif "serverSubscribes" in data:
+			elif "serverSubscribe" in data:
 				pssr = ParserShadowsocksR(self.__get_ss_base_config())
 				for cfg in pssr.parse_gui_data(data):
 					self.__nodes.append(NodeShadowsocksR(cfg))
